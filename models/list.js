@@ -8,6 +8,9 @@ const listSchema = mongoose.Schema(
     body: {
       type: String,
     },
+    status: {
+      type: String,
+    },
     user: [
       {
         type: mongoose.Schema.Types.ObjectId,

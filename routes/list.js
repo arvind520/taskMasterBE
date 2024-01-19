@@ -5,7 +5,7 @@ const router = require("express").Router();
 //create
 router.post("/todo", async (req, res) => {
   try {
-    const { title, body, id } = req.body;
+    const { title, body, id, status } = req.body;
     const foundUser = await User.findById({ _id: id });
     if (!foundUser) {
       return res
@@ -15,11 +15,12 @@ router.post("/todo", async (req, res) => {
     const newTodo = new List({
       title,
       body,
+      status,
       user: foundUser._id,
     });
-    await newTodo.save();
+    await newTodo.save();   //saving todo in list
     foundUser.list.push(newTodo._id);
-    await foundUser.save();
+    await foundUser.save();   // saving users with added todoID
     res.status(200).json(newTodo); // Respond with the created todo
   } catch (error) {
     console.error(error);
@@ -42,8 +43,8 @@ router.get("/todos/:id", async (req, res) => {
 
 //update
 router.put("/todo", (req, res) => {
-  const { id, title, body } = req.body;
-  List.findByIdAndUpdate(id, { title, body })
+  const { id, title, body, status } = req.body;
+  List.findByIdAndUpdate(id, { title, body, status })
     .then(() => res.send("updated"))
     .catch((e) => console.log(e));
 });
