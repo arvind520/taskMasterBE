@@ -2,13 +2,12 @@ const User = require("../models/user");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
 // email pass
-// email pass 
+// email pass
 router.post("/register", async (req, res) => {
   try {
     const { username, password, email } = req.body;
     // Check if the email already exists in the database
     const existingUser = await User.findOne({ email });
-    console.log(existingUser)
     if (existingUser) {
       return res.status(201).json({ message: "User Already Exists!" });
     }
@@ -28,15 +27,50 @@ router.post("/signin", async (req, res) => {
     if (!user) {
       return res.status(200).json({ message: "User not found!" });
     }
-    const isPasswordCorrect = bcrypt.compareSync(req.body.password, user.password);
+    const isPasswordCorrect = bcrypt.compareSync(
+      req.body.password,
+      user.password
+    );
     if (!isPasswordCorrect) {
-      return res.status(200).json({ message: "Please enter correct password!" });
+      return res
+        .status(200)
+        .json({ message: "Please enter correct password!" });
     }
     const { password, ...others } = user._doc;
-    return res.status(200).json({ user: user._id, message: "Login successfull!" });
+    return res
+      .status(200)
+      .json({ user: user._id, message: "Login successfull!" });
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+router.post("/forgotpassword", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(200).send({message: "No account with this email address exists.", found: false});
+    }
+    res.status(200).send({ email, found: true });
+  } catch (error) {
+    console.log("Forget password failed");
+  }
+});
+
+router.put("/resetpassword", async(req, res) => {
+  const {email, password} = req.body;
+  try {
+    const user = await User.findOne({email})
+    if (!user) {
+      return res.status(200).send({message: "No account with this email address exists.", found: false});
+    }
+    user.password = bcrypt.hashSync(password, 10);
+    await user.save();
+    res.status(200).send({message:"User Password has been reset.", success: true});
+  } catch (error) {
+    return res.status(200).send({message: "Password Reset Failed", success: false});
+  }
+})
 
 module.exports = router;
