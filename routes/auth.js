@@ -37,6 +37,7 @@ router.post("/signin", async (req, res) => {
         .json({ message: "Please enter correct password!" });
     }
     const { password, ...others } = user._doc;
+    console.log(process.env.JWT_SECRET)
     jwt.sign(
       { id: user.id },
       process.env.JWT_SECRET,
